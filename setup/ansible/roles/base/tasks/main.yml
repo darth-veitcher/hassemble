@@ -1,0 +1,71 @@
+# APT
+- name: update APT package cache
+  apt: update_cache=yes cache_valid_time=3600
+  tags: apt
+
+- name: install aptitude
+  apt: name=aptitude state=installed
+  tags: apt
+
+- name: upgrade APT to the latest packages
+  apt: upgrade=safe
+
+- name: install core packages
+  apt: name={{ item }} state=installed
+  with_items: "{{ common_required_packages }}"
+  tags: apt
+
+- name: adjust APT update intervals
+  copy: src=files/apt_periodic dest=/etc/apt/apt.conf.d/10periodic
+  tags: apt
+
+# Logwatch
+- name: Set up Postfix to relay mail
+  debconf: name=postfix
+           question='{{ item.question }}'
+           value='{{ item.value }}'
+           vtype='{{ item.vtype }}'
+  with_items:
+    - { question: 'postfix/mailname', value: '{{ ansible_fqdn }}', vtype: 'string' }
+    - { question: 'postfix/main_mailer_type', value: 'Internet Site', vtype: 'string' }
+  tags: logwatch
+
+- name: Email log summary daily
+  lineinfile: dest=/etc/cron.daily/00logwatch
+              regexp="^/usr/sbin/logwatch"
+              line="/usr/sbin/logwatch --output mail --mailto {{ logwatch_email }} --detail high"
+              state=present create=yes
+  tags: logwatch
+
+# Docker
+- name: install docker-ce pre-reqs
+  apt: name={{ item }} state=installed
+  with_items: "{{ docker_required_packages }}"
+  tags: apt
+
+- name: add apt-key for docker
+  apt_key:
+    url: https://download.docker.com/linux/raspbian/gpg
+    state: present
+
+- name: add apt repository for docker
+  apt_repository:
+    repo: deb [arch=armhf] https://download.docker.com/linux/raspbian stretch edge
+    state: present
+    filename: docker
+
+- name: update APT package cache
+  apt: update_cache=yes cache_valid_time=3600
+  tags: apt
+
+- name: install docker community edition
+  apt: name=docker-ce state=installed
+  install_recommends: no
+  tags: apt
+
+- name: install docker-compose via pip (globally)
+  pip:
+    name: docker-compose
+    umask: "0022"
+  become: True
+

@@ -1,0 +1,18 @@
+---
+# file: roles/base/vars/main.yml
+common_required_packages:
+  - ufw
+  - fail2ban
+  - unattended-upgrades
+  - logwatch
+  - software-properties-common
+  - python2.7
+  - python-apt
+
+docker_required_packages:
+  - apt-transport-https
+  - ca-certificates
+  - python-pip
+  - screen
+
+logwatch_email: saracen9@gmail.com
