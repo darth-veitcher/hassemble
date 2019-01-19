@@ -1,6 +1,6 @@
 # Install pre-reqs
-sudo apt-get update 
-sudo apt-get install -y git
+apt-get update 
+apt-get install -y git
 
 # Download the 
 cd /tmp
