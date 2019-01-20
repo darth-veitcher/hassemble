@@ -127,3 +127,6 @@ app.db
 
 # PyTest
 .pytest_cache
+
+# Ansible
+*.retry

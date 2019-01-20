@@ -4,19 +4,15 @@
   tags: apt
 
 - name: install aptitude
-  apt: name=aptitude state=installed
+  apt: name=aptitude state=present
   tags: apt
 
 - name: upgrade APT to the latest packages
   apt: upgrade=safe
 
 - name: install core packages
-  apt: name={{ item }} state=installed
+  apt: name={{ item }} state=present
   with_items: "{{ common_required_packages }}"
-  tags: apt
-
-- name: adjust APT update intervals
-  copy: src=files/apt_periodic dest=/etc/apt/apt.conf.d/10periodic
   tags: apt
 
 # Logwatch
@@ -37,9 +33,16 @@
               state=present create=yes
   tags: logwatch
 
+# Create filesystem
+- name: create directory structure
+  file:
+    path: "{{ root_directory }}/{{ child_directories }}"
+    state: directory
+    mode: 0755
+
 # Docker
 - name: install docker-ce pre-reqs
-  apt: name={{ item }} state=installed
+  apt: name={{ item }} state=present
   with_items: "{{ docker_required_packages }}"
   tags: apt
 
@@ -59,8 +62,7 @@
   tags: apt
 
 - name: install docker community edition
-  apt: name=docker-ce state=installed
-  install_recommends: no
+  apt: name=docker-ce state=present install_recommends=no
   tags: apt
 
 - name: install docker-compose via pip (globally)
@@ -69,3 +71,15 @@
     umask: "0022"
   become: True
 
+- name: pull docker image for homeassistant (takes a while)
+  docker_image:
+    name: homeassistant/raspberrypi3-homeassistant
+
+- name: run homeassistant test
+  docker_container:
+    name: home-assistant
+    image: homeassistant/raspberrypi3-homeassistant
+    network_mode: host
+    volumes: "{{ root_directory }}/homeassistant/config:/config"
+    published_ports: 8123:8123
+    restart_policy: always

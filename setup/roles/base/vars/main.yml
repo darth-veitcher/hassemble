@@ -1,8 +1,16 @@
 ---
 # file: roles/base/vars/main.yml
+
+logwatch_email: saracen9@gmail.com
+
+root_directory: /hassemble
+
+child_directories:
+  - homeassistant/config
+
 common_required_packages:
-  - ufw
-  - fail2ban
+  # - ufw
+  # - fail2ban
   - unattended-upgrades
   - logwatch
   - software-properties-common
@@ -14,5 +22,3 @@ docker_required_packages:
   - ca-certificates
   - python-pip
   - screen
-
-logwatch_email: saracen9@gmail.com
